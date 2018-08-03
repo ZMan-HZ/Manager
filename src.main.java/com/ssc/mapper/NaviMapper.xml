@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，作用就是对sql进行分类化管理，理解sql隔离 
+注意：使用mapper代理方法开发，namespace有特殊重要的作用，namespace等于mapper接口地址
+-->
+<mapper namespace="com.ssc.mapper.NaviMapper">
+
+<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+<!-- <sql id="groupID"> -->
+<!-- <if test="user !=null"> -->
+<!-- <if test="user.groupId != null"> -->
+<!-- AND  GROUP_ID= #{user.groupId}  -->
+<!-- </if> -->
+<!-- </if> -->
+<!-- </sql> -->
+
+
+<!-- <select id="getAllProdDateByGroupID" parameterType="UserQueryVo" resultType="NaviBeanCustom"> -->
+<select id="getAllProdDateByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+SELECT DISTINCT PROD_DATE prodDate, PROJECT_NM  projectName FROM PROJECT_STATUS 
+<where>
+IS_DELETE='N' 
+AND  GROUP_ID= #{groupId} 
+AND PROD_DATE IS NOT NULL
+AND  GROUP_ID= #{groupId} 
+</where>
+ ORDER BY PROD_DATE DESC, PROJECT_NM
+</select>
+
+<select id="getAllProjectByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+SELECT PROJECT_NM projectName, COUNT(PROJECT_NM) AS count  FROM PROJECT_STATUS 
+where
+IS_DELETE='N' 
+AND  GROUP_ID= #{groupId} 
+GROUP BY PROJECT_NM 
+ORDER BY PROJECT_NM
+</select>
+
+<select id="getAllProjectCountByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+SELECT A.JOB_STATUS, B.RESULTNUM, A.NEWORDER FROM ( 
+SELECT PROJECT_ST AS JOB_STATUS, ID AS NEWORDER FROM STATUS_BASIC 
+<where>GROUP_ID= #{groupId}  </where>) A 
+LEFT JOIN ( 
+SELECT JOB_STATUS, COUNT(JOB_STATUS) AS RESULTNUM  FROM PROJECT_STATUS 
+<where>
+IS_DELETE='N' 
+AND IS_CLOSED='N' 
+AND  GROUP_ID= #{groupId} 
+</where>
+GROUP BY JOB_STATUS
+ ) B ON A.JOB_STATUS=B.JOB_STATUS ORDER BY A.NEWORDER                  
+</select>
+
+<select id="getAllOwnerGroupID" parameterType="Integer" resultType="String">
+SELECT DISTINCT OWNER FROM PROJECT_STATUS 
+<where>
+IS_DELETE='N' 
+AND  GROUP_ID= #{groupId} 
+</where> 
+ORDER BY OWNER DESC                
+</select>
+
+
+	
+</mapper>
+
+
