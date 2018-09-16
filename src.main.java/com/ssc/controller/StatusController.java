@@ -1,10 +1,8 @@
 package com.ssc.controller;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.servlet.http.HttpSession;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,24 +25,27 @@ import com.ssc.beans.StatusBasicBeanCustom;
 import com.ssc.beans.StatusBeanCustom;
 import com.ssc.beans.StatusBeanVo;
 import com.ssc.beans.UserCustom;
-import com.ssc.service.ProjectCommentService;
 import com.ssc.service.StatusService;
+import com.ssc.service.StatusUpdateService;
+import com.ssc.utils.BeanUtilsCustom;
+import com.ssc.utils.BeanUtilsCustom1;
 
 @Controller
 public class StatusController {
 
+	private static Logger logger = Logger.getLogger(StatusController.class);
+	
 	@Autowired
 	private StatusService statusService;
 	@Autowired
-    private ProjectCommentService projectCommentService;
+	private StatusUpdateService statusUpdateService;
 	
-	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	
 	@ModelAttribute("projectName")
 	public List<StatusBeanCustom> getAllProjectNames(HttpSession session) throws Exception {
 		UserCustom userCustom = (UserCustom) session.getAttribute("userCustom");
 		Integer groupID = userCustom.getGroupId();
-		List<StatusBeanCustom> namesList = statusService.getProjectNames();
+		List<StatusBeanCustom> namesList = statusService.fetchProjectNames();
 		List<StatusBeanCustom> projectName = new ArrayList<StatusBeanCustom>();
 		for (StatusBeanCustom allNames : namesList) {
 			if (allNames.getGroupId() == groupID) {
@@ -61,7 +63,7 @@ public class StatusController {
 		
 			projectCommentVo.setProdDate(filterBean.getProdDate());
 			projectCommentVo.setProjectName(filterBean.getProjectName());
-			ProjectCommentBeanCustom  projectCommentBeanCustom = projectCommentService.getCommentByProjectNameAndDate(projectCommentVo);
+			ProjectCommentBeanCustom  projectCommentBeanCustom = statusService.fetchCommentByProjectNameAndDate(projectCommentVo);
 			List<String> projectCommentsList = new ArrayList<String>();
 		    if(projectCommentBeanCustom != null && projectCommentBeanCustom.getProjectComments() != null){
 		    	String[] projectComments = null;
@@ -94,7 +96,7 @@ public class StatusController {
 		// Get Session from DB
 		String newSession = (String) session.getAttribute("newSession");
 		if(newSession != null){
-			System.out.println("==============Get Filter From DB=============");
+			logger.info("==============Fetch Filter From DB=============");
 			getFilterFromDB(filterBean, userCustom);
 			session.removeAttribute("newSession");
 		}
@@ -108,24 +110,66 @@ public class StatusController {
 		// this is for filter merge Hide columns
 		if(filterBean.getIsJobStatus() == null){
 			if (filterBeanFromSession != null  && filterBean.getIsFilter() ==null){
-				mergeFilterObject(filterBean,filterBeanFromSession);
+//				mergeFilterObject(filterBean,filterBeanFromSession);
+				List<String> ignoreHideAndIsFilterPropertiesList = ignoreHideAndIsFilterPropertiesList(filterBeanFromSession);
+				String[] ignoreProperties = new String[ignoreHideAndIsFilterPropertiesList.size()];
+				ignoreHideAndIsFilterPropertiesList.toArray(ignoreProperties);
+//				BeanUtilsCustom1.copyPropertiesCustom(filterBeanFromSession,filterBean,true,ignoreProperties);
+				BeanUtilsCustom.copyPropertiesCustom(filterBeanFromSession,filterBean,ignoreProperties);
+				logger.info("==============merge FilterObject=============");
 			}
 		}else{
 			if (filterBeanFromSession != null  && filterBean.getIsFilter() ==null){
-				mergeEachHideCloumns(filterBean,filterBeanFromSession);
+//				mergeEachHideCloumns(filterBean,filterBeanFromSession);
+				List<String> ignorePropertiesList = ignoreHidePropertiesList(filterBeanFromSession);
+				String[] ignoreProperties = new String[ignorePropertiesList.size()];
+				ignorePropertiesList.toArray(ignoreProperties);
+//				BeanUtilsCustom1.copyPropertiesCustom(filterBeanFromSession,filterBean,true,ignoreProperties);
+				BeanUtilsCustom.copyPropertiesCustom(filterBeanFromSession,filterBean,ignoreProperties);
+				logger.info("==============merge Each HideCloumns=============");
 			}
 		}
 		ModelAndView modelAndView = new ModelAndView();
 		StatusBeanVo statusBeanVo = filterSession(session, filterBean, modelAndView, groupID); 
 		mainFormAndReleaseNote(modelAndView, statusBeanVo);
 		//Save session into DB
-		if(filterBeanFromSession != null && !isObjectEqual(filterBean,filterBeanFromSession)){
+		if(filterBeanFromSession != null && !isObjectFilterEqual(filterBean,filterBeanFromSession)){
+			logger.info("===== DB Filter with Session Equals  === False " );
 				updateDBFilterSession(filterBean, userCustom);
-				System.out.println(new Date()+"=====updateDBFilterSession");
+				logger.info("=====update DB Filter Session");
+		}else{
+			logger.info("===== DB Filter with Session Equals  === TRUE " );
 		}
 		modelAndView.setViewName("itemsStatus/items");
 		
 		return modelAndView;
+	}
+
+	/**
+	 * @param filterBeanFromSession
+	 * @return
+	 */
+	public List<String> ignoreHidePropertiesList(FilterBean filterBeanFromSession) {
+		Field[] sourceFields = filterBeanFromSession.getClass().getDeclaredFields();
+		List<String> ignoreProperties= new ArrayList<String>();
+		for(int index = 0; index < sourceFields.length;index++){
+			String fieldName = sourceFields[index].getName();
+			if(fieldName.contains("hide")){
+				ignoreProperties.add(fieldName);
+			}
+		}
+		return ignoreProperties;
+	}
+	public List<String> ignoreHideAndIsFilterPropertiesList(FilterBean filterBeanFromSession) {
+		Field[] sourceFields = filterBeanFromSession.getClass().getDeclaredFields();
+		List<String> ignoreProperties= new ArrayList<String>();
+		for(int index = 0; index < sourceFields.length;index++){
+			String fieldName = sourceFields[index].getName();
+			if(isFieldContainsHideOrIsFilter(fieldName) && !"isFilter".equalsIgnoreCase(fieldName)){
+				ignoreProperties.add(fieldName);
+			}
+		}
+		return ignoreProperties;
 	}
 
 	public void updateDBFilterSession(FilterBean filterBean, UserCustom userCustom) throws Exception {
@@ -149,16 +193,16 @@ public class StatusController {
 				}
 				field.setAccessible(false);
 			} catch (Exception e) {
+				logger.error(e);
 				e.printStackTrace();
 			}
 		}
-//			System.out.println(sb.toString());
 		userCustom.setOtherConfig(sb.toString());
-		statusService.updateUserByName(userCustom.getUserName(), userCustom);
+		statusUpdateService.updateUserByName(userCustom.getUserName(), userCustom);
 	}
 
-	public static boolean isObjectEqual(Object source, Object target) {
-		
+	public static boolean isObjectFilterEqual(Object source, Object target) {
+
 		Field[] sourceFields = source.getClass().getDeclaredFields();
 		Field[] targetFields = target.getClass().getDeclaredFields();
 		
@@ -166,62 +210,29 @@ public class StatusController {
 		List<Field> targetFieldsList = Arrays.asList(targetFields);
 		List<Object> difField = new ArrayList<Object>();
 		sourceFieldsList.forEach(srcField -> {srcField.setAccessible(true);
-									try {
-										Object valueofSource = srcField.get(source);
-										if(valueofSource == null || valueofSource == ""){ srcField.set(source, null);}
-										targetFieldsList.get(targetFieldsList.indexOf(srcField)).setAccessible(true);
-										Field targetField = targetFieldsList.get(targetFieldsList.indexOf(srcField));
-										Object valueofTarget = targetField.get(target);
-										if(valueofTarget == null || valueofTarget == ""){targetField.set(target, null);}
-										if(srcField.getType().isArray()){
-										  if(!Arrays.asList((String[]) valueofTarget).equals(Arrays.asList((String[]) valueofSource))){difField.add(srcField);}
-										}else if(valueofTarget != null && valueofSource !=null){
-										  if(!valueofTarget.equals(valueofSource)){difField.add(srcField);}}
-										targetField.setAccessible(false);
-									} catch (Exception e) { e.printStackTrace();}
-									srcField.setAccessible(false);
-							       }
-	                             );
-//		
-//		List<Field> sourceFieldsList = Arrays.asList(sourceFields);
-//		List<Field> targetFieldsList = Arrays.asList(targetFields);
-//		List<Object> difField = new ArrayList<Object>();
-//		for (Field srcField : sourceFieldsList) {
-//			srcField.setAccessible(true);
-//			try {
-//				Object valueofSource = srcField.get(source);
-//				if(valueofSource == null || valueofSource == ""){
-//					srcField.set(source, null);
-//				}
-//				Field targetField = targetFieldsList.get(targetFieldsList.indexOf(srcField));
-//				targetField.setAccessible(true);
-//				Object valueofTarget = targetField.get(target);
-//				if(valueofTarget == null || valueofTarget == ""){
-//					targetField.set(target, null);
-//					}
-//				if(srcField.getType().isArray()){
-////					Arrays.asList((String[]) valueofTarget).forEach(s ->System.out.println(s));
-////					Arrays.asList((String[]) valueofSource).forEach(s ->System.out.println(s));
-//					if(!Arrays.asList((String[]) valueofTarget).equals(Arrays.asList((String[]) valueofSource))){
-//						difField.add(srcField);
-//					}
-//				}else if(valueofTarget != null && valueofSource !=null){
-//					   if(!valueofTarget.equals(valueofSource)){
-//						difField.add(srcField);
-//					}
-//				}
-//				targetField.setAccessible(false);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//			srcField.setAccessible(false);
-//			continue;
-//		}
-//		
+		                            if(isFieldContainsHideOrIsFilter(srcField.getName())){
+		                             try {  Object valueofSource = srcField.get(source);
+		                            		if(isValueNullorBlank(valueofSource)){ srcField.set(source, null);}
+		                            		targetFieldsList.get(targetFieldsList.indexOf(srcField)).setAccessible(true);
+		                            		Field targetField = targetFieldsList.get(targetFieldsList.indexOf(srcField));
+		                            		Object valueofTarget = targetField.get(target);
+		                            		if(isValueNullorBlank(valueofTarget)){targetField.set(target, null);}
+		                            		if(srcField.getType().isArray()){
+		                            			if(!Arrays.asList((String[]) valueofTarget).equals(Arrays.asList((String[]) valueofSource))){difField.add(srcField);}
+		                            		}else if(valueofTarget != null && valueofSource !=null){
+		                            			if(!valueofTarget.equals(valueofSource)){difField.add(srcField);}}
+		                            		targetField.setAccessible(false);} catch (Exception e) { e.printStackTrace();}
+		                            } srcField.setAccessible(false); } );
+		logger.info("===== DB Filter Equals Session  ? ==== " );
 		return difField.isEmpty()? true:false;
 	}
 	
-	
+	public static boolean isValueNullorBlank(Object value){
+		return (value == null || value == "")? true:false;
+	}
+	public static boolean isFieldContainsHideOrIsFilter(String fieldName){
+		return fieldName.toUpperCase().contains("HIDE")||fieldName.toUpperCase().contains("IS")?true:false;
+	}
 	
 	public void getFilterFromDB(FilterBean filterBean, UserCustom userCustom) {
 		Map<String,String> filterFromDBSession = userCustom.getMemoryConfig();
@@ -230,7 +241,7 @@ public class StatusController {
 					String filterName = entry.getKey().substring(3);
 					setFilterFromDB(filterBean, entry, filterName);
 //					System.out.println(filterName+"===="+entry.getValue());
-				}
+				}else
 				if(entry.getKey().contains("hide")){
 					String filterName = entry.getKey().substring(4); 
 					setFilterFromDB(filterBean, entry, filterName);
@@ -243,6 +254,7 @@ public class StatusController {
 	}
 
 	public void setFilterFromDB(FilterBean filterBean, Entry<String, String> entry, String filterName) {
+		logger.info("=====Set Filter From DB======");
 		Field[] filterField = filterBean.getClass().getDeclaredFields();
 		for (Field field : filterField) {
 			try {
@@ -254,13 +266,16 @@ public class StatusController {
 				field.setAccessible(false);
 			} catch (Exception e) {
 				e.printStackTrace();
+				logger.error(e);
 			}
 		}
 	}
 	
 	public void mainFormAndReleaseNote(ModelAndView modelAndView, StatusBeanVo statusBeanVo) throws Exception {
 		
-		List<StatusBeanCustom> statusBeanList = statusService.getStatusByMultiParam(statusBeanVo);
+		
+		List<StatusBeanCustom> statusBeanList = statusService.fetchStatusByMultiParam(statusBeanVo);
+		logger.info("=====Fetch Status From DB Completed======:: Fetched "+ statusBeanList.size()+"  Records");
 		Set<ProjectAttachmentBeanCustom> attachmentBeanCustomList = new LinkedHashSet<>();
 		Integer reviewedCount= 	0;
 		//
@@ -274,11 +289,15 @@ public class StatusController {
 					statusBeanCustom.setItemDesc(statusBeanCustom.getItemDesc().replaceAll("\\[", "<font color=\"lilac\">["));
 				}
 				statusBeanList.set(i,statusBeanCustom);
+				if(i == statusBeanList.size()-1)
+				logger.info("=====Set Item Description Completed ====== ");
 			}
 			if(statusBeanCustom.getStatus() != null){
 				statusBeanCustom.setStatus(statusBeanCustom.getStatus().replaceAll("\\n", "<br/>@##@"));
                 statusBeanCustom.setStatusInforList(Arrays.asList(statusBeanCustom.getStatus().split("@##@")));
 				statusBeanList.set(i,statusBeanCustom);
+				if(i == statusBeanList.size()-1)
+				logger.info("=====Set Item Status Completed ====== ");
 			}
 			if(statusBeanCustom.getAttachments_url() != null){
 				String[] url = statusBeanCustom.getAttachments_url().split("@@@");
@@ -307,6 +326,8 @@ public class StatusController {
 				}
 				statusBeanCustom.setComments(statusBeanCustom.getComments().replaceAll("\\n", "<br/>"));
 				statusBeanList.set(i,statusBeanCustom);
+				if(i == statusBeanList.size()-1)
+				logger.info("=====Set Item Comments Completed ====== ");
 			}
 			if(statusBeanCustom.getDbScripts() != null){
 				if(statusBeanCustom.getDbScripts().contains("[[=ALL REVIEWED=]]")){
@@ -316,6 +337,8 @@ public class StatusController {
 				}
 				statusBeanCustom.setDbScripts(statusBeanCustom.getDbScripts().replaceAll("\\n", "<br/>"));
 				statusBeanList.set(i,statusBeanCustom);
+				if(i == statusBeanList.size()-1)
+				logger.info("=====Set Item DbScripts Completed ====== ");
 			}
 			if(statusBeanCustom.getRemainedQuestions() != null){
 				if(statusBeanCustom.getRemainedQuestions().contains("[[=ALL REVIEWED=]]")){
@@ -325,12 +348,14 @@ public class StatusController {
 				}
 				statusBeanCustom.setRemainedQuestions(statusBeanCustom.getRemainedQuestions().replaceAll("\\n", "<br/>"));
 				statusBeanList.set(i,statusBeanCustom);
+				if(i == statusBeanList.size()-1)
+				logger.info("=====Set Item RemainedQuestions Completed ====== ");
 			}
-			
 			if(statusBeanCustom.getReviewedTag() != null){
 				reviewedCount++;
 			}
 		}
+		logger.info("=====main Form Generated Succeed ");
 		modelAndView.addObject("reviewedTag", reviewedCount);
 		modelAndView.addObject("attachmentBeanCustomList", attachmentBeanCustomList);
 		modelAndView.addObject("statusBeanList", statusBeanList);
@@ -338,7 +363,8 @@ public class StatusController {
 	}
 
 	public StatusBeanVo filterSession(HttpSession session, FilterBean filterBean, ModelAndView modelAndView, Integer groupID) throws Exception {
-		List<StatusBasicBeanCustom> statusList = statusService.getProjectStausByGroupID(groupID);
+		
+		List<StatusBasicBeanCustom> statusList = statusService.fetchProjectStatusByGroupID(groupID);
 		modelAndView.addObject("statusList", statusList);
 		
 		Map<String,String> filterStatus = new HashMap<String,String>();
@@ -382,7 +408,6 @@ public class StatusController {
 		if(filterBean.getIsJobStatus()!= null && filterBean.getIsJobStatus().length != 0){
 			statusBeanVo.setJobStatusList(Arrays.asList(filterBean.getIsJobStatus()));
 		}
-		
 //		if(filterBean.getJobStatus()!= null){
 //			if(filterBean.getJobStatus().length >= 2 ){
 //			statusBeanVo.setJobStatusList(Arrays.asList(filterBean.getJobStatus()));
@@ -411,65 +436,5 @@ public class StatusController {
 		}
 	}
 
-	// Using reflect to copy FilterBean each not NULL property from session to filterBean
-	public static void mergeFilterObject(FilterBean target, FilterBean source) {
-		Field[] sourceFields = source.getClass().getDeclaredFields();
-		for (Field field : sourceFields) {
-			try {
-				field.setAccessible(true);
-				Object value = field.get(source);
-				String fieldName = field.getName();
-				if((fieldName.contains("hide") || fieldName.contains("is")) && !"isFilter".equalsIgnoreCase(fieldName)){
-					if (null != value && value.toString().length() != 0) {
-						field.set(target, value);
-					}
-				}
-				field.setAccessible(false);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public static void mergeObjectExcludeHideAndIS(FilterBean target, FilterBean source) {
-		Field[] sourceFields = source.getClass().getDeclaredFields();
-		for (Field field : sourceFields) {
-			try {
-				field.setAccessible(true);
-				Object value = field.get(source);
-				String fieldName = field.getName();
-				if(!(fieldName.contains("hide") || fieldName.contains("is"))){
-					if (null != value && value.toString().length() != 0) {
-						field.set(target, value);
-					}
-				}
-				field.setAccessible(false);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public static void mergeEachHideCloumns(FilterBean target,FilterBean source){
-		Field[] sourceFields = source.getClass().getDeclaredFields();
-		for (Field field : sourceFields) {
-			try {
-				field.setAccessible(true);
-				Object value = field.get(source);
-				String fieldName = field.getName();
-				if(fieldName.contains("hide")  && !"isFilter".equalsIgnoreCase(fieldName)){
-					if (null != value && value.toString().length() != 0) {
-						field.set(target, value);
-					}
-				}
-				field.setAccessible(false);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	
-	
 
 }

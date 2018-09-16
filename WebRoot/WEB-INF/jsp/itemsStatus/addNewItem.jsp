@@ -82,7 +82,7 @@ table {
 <td><input type="text" name="owner"  size="50" placeholder= " Item should have an Owner" /></td></tr>
 </c:when>
 <c:otherwise>
-<td><input type="text" name="owner"  size="50" />${statusBeanCustom.owner}</td></tr>
+<td><input type="text" name="owner"  size="50" value="${statusBeanCustom.owner}"/></td></tr>
 </c:otherwise>
 </c:choose>
 <tr><th>Atrack Activity</th>
@@ -98,10 +98,12 @@ table {
 </c:choose>
 <c:choose>
 <c:when test="${statusBeanCustom.prodDate != null}">
-<tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDateCustom" value="<fmt:formatDate value="${statusBeanCustom.prodDate}" pattern="yyyy-MM-dd"/>" placeholder= " Please Select Prod Date"/>(EST)</td></tr>
+<%-- <tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDateCustom" value="<fmt:formatDate value="${statusBeanCustom.prodDate}" pattern="yyyy-MM-dd"/>" placeholder= " Please Select Prod Date"/>(EST)</td></tr> --%>
+<tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDate" value="<fmt:formatDate value="${statusBeanCustom.prodDate}" pattern="yyyy-MM-dd"/>" placeholder= " Please Select Prod Date"/>(EST)</td></tr>
 </c:when>
 <c:otherwise>
-<tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDateCustom" placeholder= " Please Select Prod Date"/>(EST)</td></tr>
+<!-- <tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDateCustom" placeholder= " Please Select Prod Date"/>(EST)</td></tr> -->
+<tr><th>Prod Date</th><td><input type="text" id="prodDate" name="prodDate" placeholder= " Please Select Prod Date"/>(EST)</td></tr>
 </c:otherwise>
 </c:choose>
 <tr><th>Status Infor</th>
@@ -141,6 +143,6 @@ table {
 <script type="text/javascript">
 var isOpenFirst ='${isOpenFirst}';
 if(isOpenFirst =='no') {
-	window.alert("Update Completed!");
+	window.alert("Add Completed!");
 }
 </script>

@@ -11,27 +11,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
 
 
-<sql id="projectName"><if test="projectName!=null and projectName!=''">
+<sql id="projectName"><if test="projectName !=null and projectName !=''">
     and project_nm LIKE '%${projectName}%'
 </if></sql>
 
-<sql id="prodDate"><if test="prodDate!=null and prodDate!=''">
-<!--     and prod_date = to_date('${prodDate}','yyyy-MM-dd') -->
+<sql id="prodDate"><if test="prodDate !=null and prodDate !=''">
     and PROD_DATE = #{prodDate,jdbcType=DATE}
 </if></sql>
-<sql id="prodDateOrigin"><if test="prodDateOrigin!=null and prodDateOrigin!=''">
-<!--     and prod_date = to_date('${prodDateOrigin}','yyyy-MM-dd') -->
+<sql id="prodDateOrigin"><if test="prodDateOrigin !=null and prodDateOrigin !=''">
     and PROD_DATE = #{prodDateOrigin,jdbcType=DATE}
 </if></sql>
 
-
-<select id="getCommentsListByProjectNameAndDate" parameterType="ProjectCommentVo" resultType="ProjectCommentBeanCustom">
-select prod_date prodDate,project_comment projectComments from PROJECT_COMMENTS 
-<where>
-	<include refid="projectName"></include>
-	<include refid="prodDate"></include>
-	</where>
-</select>
+<!-- <select id="getCommentsListByProjectNameAndDate" parameterType="ProjectCommentVo" resultType="ProjectCommentBeanCustom"> -->
+<!-- select prod_date prodDate,project_comment projectComments from PROJECT_COMMENTS  -->
+<!-- <where> -->
+<!-- 	<include refid="projectName"></include> -->
+<!-- 	<include refid="prodDate"></include> -->
+<!-- 	</where> -->
+<!-- </select> -->
 
 <select id="getCommentByProjectNameAndDate" parameterType="ProjectCommentVo" resultType="ProjectCommentBeanCustom">
 select prod_date prodDate,project_comment projectComments from PROJECT_COMMENTS 

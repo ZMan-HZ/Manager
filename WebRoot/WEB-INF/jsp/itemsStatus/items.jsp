@@ -343,8 +343,8 @@ Select All:
 </c:choose>
                                                 <td style="text-align:center;vertical-align:middle"><input name="checkbox_id" type="checkbox" value="${statusBean.id}" /></td>
 <c:if test="${filterBean.hideOrder==null}"><c:choose><c:when test="${statusBean.reviewedTag == null}">
-                                                <td><a href="javascript:updateStatus('${statusBean.id}')">${order.count}</a></td></c:when><c:otherwise>
-                                                <td><a href="javascript:updateStatus('${statusBean.id}')">${order.count}</a><br/><font color="red">[R]</font></td></c:otherwise></c:choose></c:if>
+                                                <td><a href="javascript:updateStatus('${statusBean.id}')">${order.count}</a></td></c:when>
+                                   <c:otherwise><td><a href="javascript:updateStatus('${statusBean.id}')">${order.count}</a><br/><font color="red">[R]</font></td></c:otherwise></c:choose></c:if>
                                                 <td><a name="#_${statusBean.id}">${statusBean.projectName}</a><br/> </td> 
                                                 <td style="text-align:left;vertical-align:middle">
                                                 ${statusBean.itemDesc}<br/>
@@ -494,6 +494,7 @@ Select All:
 		                    return false;
 		                });
 		            }
+// 		            console.log(isDown);
 		            $divMove.mousedown(function(event) {
 		                var event = event || window.event;
 		                mX = event.clientX;
@@ -506,6 +507,7 @@ Select All:
 		                var event = event || window.event;
 		                var x = event.clientX;
 		                var y = event.clientY;
+// 		                console.log(isDown);
 		                if(isDown) {
 		                    $divWrap.css({"left": x - mX + dX, "top": y - mY + dY});
 		                }
@@ -519,9 +521,6 @@ Select All:
 		$(document).ready(function() {
 		    $("#myModal").dragDiv();
 		});
-		
-		
-		
 </script>
 
 <script type="text/javascript">

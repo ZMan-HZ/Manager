@@ -1,12 +1,11 @@
 package com.ssc.controller;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpSession;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import com.ssc.beans.StatusBasicBeanCustom;
-import com.ssc.beans.StatusBean;
 import com.ssc.beans.StatusBeanCustom;
 import com.ssc.beans.UpdateStatusBean;
 import com.ssc.beans.UserCustom;
+import com.ssc.exception.CustomException;
 import com.ssc.service.StatusService;
 import com.ssc.service.StatusUpdateService;
 
@@ -28,6 +27,9 @@ import com.ssc.service.StatusUpdateService;
 @Controller
 public class StatusUpdateController {
 
+	private static Logger logger = Logger.getLogger(StatusUpdateController.class);
+	
+	
 	@Autowired
 	private StatusService statusService;
 	@Autowired
@@ -39,7 +41,7 @@ public class StatusUpdateController {
 	public List<StatusBeanCustom> getAllProjectNames(HttpSession session) throws Exception {
 		UserCustom userCustom = (UserCustom) session.getAttribute("userCustom");
 		Integer groupID = userCustom.getGroupId();
-		List<StatusBeanCustom> namesList = statusService.getProjectNames();
+		List<StatusBeanCustom> namesList = statusService.fetchProjectNames();
 		List<StatusBeanCustom> projectName = new ArrayList<StatusBeanCustom>();
 		for (StatusBeanCustom allNames : namesList) {
 			if (allNames.getGroupId() == groupID) {
@@ -56,7 +58,7 @@ public class StatusUpdateController {
 		Integer groupID = userCustom.getGroupId();
 //		List<StatusBasicBeanCustom> statusList = statusService.getProjectStausByGroupID(groupID);
 //		return statusList;
-		return statusService.getProjectStausByGroupID(groupID);
+		return statusService.fetchProjectStatusByGroupID(groupID);
 	}
 	
 	
@@ -64,7 +66,11 @@ public class StatusUpdateController {
 	@RequestMapping(value = "/updateStatus", method = { RequestMethod.POST, RequestMethod.GET })
 	public ModelAndView updateStatus(Integer id, HttpSession session) throws Exception{
 		
-		StatusBeanCustom statusBeanCustom = statusUpdateService.getStatusByID(id);
+		if(id == null){
+			  throw new CustomException("No Item be Selected");
+		    }
+		
+		StatusBeanCustom statusBeanCustom = statusService.fetchStatusByID(id);
 		UserCustom userCustom = (UserCustom) session.getAttribute("userCustom");
 //		Integer groupID = userCustom.getGroupId();
 //		List<StatusBasicBeanCustom> statusList = statusService.getProjectStausByGroupID(groupID); // Replaced by ModelAttribute
@@ -82,7 +88,7 @@ public class StatusUpdateController {
 	@RequestMapping(value="/updateStatusSubmit", method={ RequestMethod.POST, RequestMethod.GET})
 	public ModelAndView updateStatusSubmit(Integer id,UpdateStatusBean updateStatusBean) throws Exception{
         
-		StatusBeanCustom statusBeanCustom = statusUpdateService.getStatusByID(id);
+		StatusBeanCustom statusBeanCustom = statusService.fetchStatusByID(id);
 //        mergeObject(updateStatusBean,statusBeanCustom);
         BeanUtils.copyProperties(updateStatusBean, statusBeanCustom);
 //        StatusBeanCustom statusBeanCustom = new StatusBeanCustom();  //Not in Use Because it will copy all value including NULL
@@ -90,7 +96,7 @@ public class StatusUpdateController {
         statusBeanCustom.setId(id);
         statusBeanCustom.setUpdateTime(new Date());
         statusUpdateService.updateStatusRecordByID(id, statusBeanCustom);
-        
+        logger.info("update Status Submitted");
         ModelAndView modelAndView = new ModelAndView();
         String isOpenFirst = "no";
         modelAndView.addObject("isOpenFirst", isOpenFirst);
@@ -106,7 +112,7 @@ public class StatusUpdateController {
 		
 		UserCustom userCustom = (UserCustom) session.getAttribute("userCustom");
 		Integer groupID = userCustom.getGroupId();
-		List<StatusBasicBeanCustom> statusList = statusService.getProjectStausByGroupID(groupID);
+		List<StatusBasicBeanCustom> statusList = statusService.fetchProjectStatusByGroupID(groupID);
 		
 		ModelAndView modelAndView = new ModelAndView();
 		StatusBeanCustom statusBeanCustom = new StatusBeanCustom();
@@ -137,16 +143,18 @@ public class StatusUpdateController {
 		if(null != statusBeanCustom.getStartDate() && statusBeanCustom.getStartDate().length() != 0){
 			statusBeanCustom.setCreateTime(sdf.parse(statusBeanCustom.getStartDate()));
 		}
-		if(statusBeanCustom.getProdDateCustom().length()!= 0){
-			statusBeanCustom.setProdDate(sdf.parse(statusBeanCustom.getProdDateCustom()));
-		}
+//		if(statusBeanCustom.getProdDateCustom().length()!= 0){
+//			statusBeanCustom.setProdDate(sdf.parse(statusBeanCustom.getProdDateCustom()));
+//		}
 		if(statusBeanCustom.getItemDesc().isEmpty()){
 			statusBeanCustom.setItemDesc("User didn't Enter Description");
 		}
+		statusBeanCustom.setGroupId(userCustom.getGroupId());
 		statusBeanCustom.setUpdateBy(userCustom.getUserName());
-		statusBeanCustom.setUpdateTime(statusBeanCustom.getCreateTime());
+		statusBeanCustom.setUpdateTime(new Date());
 		
 		statusUpdateService.insertStatusRecord(statusBeanCustom);
+		logger.info("insert Status Submitted");
 		ModelAndView modelAndView = new ModelAndView();
 		String isOpenFirst = "no";
 		modelAndView.addObject("isOpenFirst", isOpenFirst);
@@ -155,44 +163,5 @@ public class StatusUpdateController {
 		
 		return modelAndView;
 	}
-	
-	
-	/*
-	public static void mergeObject(Object source, Object target) {
-		Field[] sourceFields = source.getClass().getDeclaredFields();
-		Field[] targetFields = target.getClass().getSuperclass().getDeclaredFields();
-		for (Field srcField : sourceFields) {
-			srcField.setAccessible(true);
-			try {
-				Object value = srcField.get(source);
-//				System.out.println("value::"+value);
-//				System.out.println("sourceField::"+srcField.getName());
-				List<Field> targetFieldsList = Arrays.asList(targetFields);
-				Field targetField = targetFieldsList.get(targetFieldsList.indexOf(srcField));
-				targetField.setAccessible(true);
-				if (srcField.getName().equalsIgnoreCase(targetField.getName())) {
-						targetField.set(target, value);
-//						break;
-				}
-//				for(Field targetField : targetFields){
-//					targetField.setAccessible(true);
-////					System.out.println("targetField::"+targetField.getName());
-//					if (srcField.getName().equalsIgnoreCase(targetField.getName())) {
-////						if (null != value && value.toString().length() != 0) {
-//							targetField.set(target, value);
-//							break;
-////						}
-//					}
-//				}
-				targetField.setAccessible(false);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			srcField.setAccessible(false);
-			continue;
-		}
-	}
-	*/
-	
 	
 }

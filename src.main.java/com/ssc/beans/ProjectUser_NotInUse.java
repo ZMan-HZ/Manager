@@ -1,8 +1,9 @@
 package com.ssc.beans;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class ProjectUser   {
+public class ProjectUser_NotInUse   implements Serializable{
     private String pass;
 
     private String role;

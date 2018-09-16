@@ -1,9 +1,10 @@
 package com.ssc.beans;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class ProjectStatus {
+public class ProjectStatus_NotInUse implements Serializable{
     private int id;
 
     private String itemDesc;

@@ -1,15 +1,21 @@
 package com.ssc.service;
 
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import com.ssc.beans.NaviBeanCustom;
-import com.ssc.beans.UserQueryVo;
 
+
+
+@Cacheable(value="naviServiceImpl",key="#root.methodName")
 public interface NaviService {
 
-	public List<NaviBeanCustom> getAllProdDateByGroupID(Integer grouID) throws Exception;
-	public List<NaviBeanCustom> getAllProjectByGroupID(Integer grouID) throws Exception;
-	public List<NaviBeanCustom> getAllProjectCountByGroupID(Integer grouID) throws Exception;
-	public List<String> getAllOwnerGroupID(Integer grouID) throws Exception;
+	public List<NaviBeanCustom> fetchAllProdDateByGroupID(Integer groupID) throws Exception;
+	
+	public List<NaviBeanCustom> fetchAllProjectByGroupID(Integer groupID) throws Exception;
+	
+	public List<NaviBeanCustom> fetchAllProjectCountByGroupID(Integer groupID) throws Exception;
+	
+	public List<NaviBeanCustom> fetchAllOwnerByGroupID(Integer groupID) throws Exception;
 	
 	
 }

@@ -10,8 +10,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
 
-<!--   ResultMap     -->
-
 
 <sql id="UserName"><if test="userName!=null">
 and user_nm= #{userName}
@@ -42,11 +40,11 @@ and user_nm= #{userName}
     and group_id = #{groupId}
 </if></sql>
 
-<sql id="prodDate"><if test="prodDate!=null and prodDate!=''">
+<sql id="prodDate"><if test="prodDate!=null and prodDate !=''">
     and PROD_DATE = #{prodDate,jdbcType=DATE}
 </if></sql>
 
-<sql id="prodDateOrigin"><if test="prodDateOrigin!=null and prodDateOrigin!=''">
+<sql id="prodDateOrigin"><if test="prodDateOrigin!=null and prodDateOrigin !=''">
    and PROD_DATE = #{prodDateOrigin,jdbcType=DATE}
 <!--      prod_date = to_date('${prodDateOrigin}','yyyy-MM-dd') -->
 </if></sql>
@@ -113,7 +111,8 @@ and id= #{id}
 	<include refid="prodDate"></include>
 	<include refid="jobStatusList"></include>
 	</where>
-	ORDER BY update_time DESC,prod_date DESC,id
+<!-- 	ORDER BY update_time DESC,prod_date DESC,id -->
+	ORDER BY update_time DESC
 </select>
 
 <select id="getStatusByJobStatus" parameterType="StatusBeanVo" resultType="StatusBeanCustom">
@@ -127,7 +126,7 @@ and id= #{id}
 	<include refid="group_id"></include>
 	<include refid="projectName"></include>
 	</where>
-	order by project_nm, create_time DESC
+	order by project_nm, update_time DESC,create_time DESC
 </select>
 
 <select id="getAllUsers" resultType="User">
@@ -139,7 +138,7 @@ select user_nm userName, role, group_id groupId, OTHER_CONFIG otherConfig, long_
 select PROJECT_NM projectName, group_id groupId from PROJECT_NAME order by PROJECT_NM
 </select>
 
-<select id="getProjectStausByGroupID"  parameterType="Integer" resultType="StatusBasicBeanCustom">
+<select id="getProjectStatusByGroupID"  parameterType="Integer" resultType="StatusBasicBeanCustom">
 SELECT project_st projectStatus, id, parent_id, next_id, group_id  FROM STATUS_BASIC 
 WHERE group_id=#{group_id} 
 ORDER BY ID
@@ -169,22 +168,22 @@ update PROJECT_STATUS
 </choose>
 <!-- <if test="status != null and status !=''">Status=#{status},</if> -->
 <!-- <if test="prodDate != null">prod_date=#{prodDate},</if> -->
-<choose><when test="prodDate == null or prodDate==''">PROD_DATE = NULL,</when>
-<otherwise>PROD_DATE = #{prodDate,jdbcType=DATE},</otherwise>
+<choose><when test="prodDate != null">PROD_DATE = #{prodDate,jdbcType=DATE},</when>
+<otherwise>PROD_DATE = NULL,</otherwise>
 </choose>
 <!-- <if test="prodDate != null">PROD_DATE = #{prodDate,jdbcType=DATE},</if> -->
-<choose><when test="closeTime == null or closeTime==''">close_time = NULL,</when>
-<otherwise>close_time = #{closeTime,jdbcType=DATE},</otherwise>
+<choose><when test="closeTime != null">close_time = #{closeTime,jdbcType=DATE},</when>
+<otherwise>close_time = NULL,</otherwise>
 </choose>
 <!-- <if test="closeTime != null and closeTime !=''">close_time=#{closeTime,jdbcType=DATE},</if> -->
 <if test="isClosed != null">is_closed=#{isClosed},</if>
 <if test="isDelete != null and isDelete !=''">is_delete=#{isDelete},</if>
-<if test="updateTime != null and updateTime !=''">update_time=#{updateTime},</if>
+<if test="updateTime != null">update_time=#{updateTime},</if>
 <if test="updateBy != null and updateBy !=''">update_by=#{updateBy},</if>
 <if test="projectName != null and projectName !=''" >project_nm=#{projectName},</if>
 <if test="jobStatus != null and jobStatus !=''">job_status=#{jobStatus},</if>
 <if test="statusPercent != null">status_percent=#{statusPercent},</if>
-<if test="createTime != null and createTime !=''">create_time=#{createTime,jdbcType=DATE},</if>
+<if test="createTime != null">create_time=#{createTime,jdbcType=DATE},</if>
 <if test="hasAttachment != null">has_attachment=#{hasAttachment},</if>
 <choose><when test="extraComment == null or extraComment ==''">extra_comment = NULL,</when>
 <otherwise>extra_comment=#{extraComment},</otherwise>
@@ -261,7 +260,7 @@ insert into PROJECT_STATUS(
 id, Item_Desc,Leader,Owner,Status,prod_date,create_time,close_time,is_closed, is_delete, create_by, update_time, update_by, 
 project_nm, job_status, status_percent, has_attachment, group_id, item_category, extra_comment,remained_questions)values 
 (
-#{id}, #{itemDesc},#{leader},#{owner},#{status},#{prodDate},#{createTime},#{closeTime},#{isClosed},'N',#{createBy},#{createTime},#{updateBy}, 
+#{id}, #{itemDesc},#{leader},#{owner},#{status},#{prodDate},#{createTime},#{closeTime},#{isClosed},'N',#{createBy},#{updateTime},#{updateBy}, 
 #{projectName},#{jobStatus},#{statusPercent},'N',#{groupId},#{itemCategory},#{extraComment},#{remainedQuestions})
 </insert>
 

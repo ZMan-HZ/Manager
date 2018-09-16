@@ -3,6 +3,8 @@ package com.ssc.controller;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import com.ssc.service.StatusService;
 @Controller
 public class StatusReportController {
 
+	private static Logger logger = Logger.getLogger(StatusReportController.class);
 	
 	@Autowired
 	private StatusService statusService;
@@ -38,15 +41,17 @@ public class StatusReportController {
 		String[] openedItemsArray = new String[]{"Draft", "DEV", "UAT"};
 		setStatus(openedItemsArray,statusBeanVo);
 		List<StatusBeanCustom>  openedStatusBeanList = mainFormAndReleaseNote(statusBeanVo);
+		logger.info("opened StatusBean List Generated Status :: " + openedItemsArray);
 		
 		String[] completedItemsArray =  new String[]{"PASS"};
 		setStatus(completedItemsArray,statusBeanVo);
 		List<StatusBeanCustom>  completedStatusBeanList = mainFormAndReleaseNote(statusBeanVo);
+		logger.info("completed StatusBean List Generated Status::" + completedItemsArray);
 		
 		String[] onHoldItemsArray =  new String[]{"HOLD"};
 		setStatus(onHoldItemsArray,statusBeanVo);
 		List<StatusBeanCustom>  onHoldStatusBeanList = mainFormAndReleaseNote(statusBeanVo);
-		
+		logger.info("onHold StatusBean List Generated Status::" + onHoldItemsArray);
 		
 		ModelAndView modelAndView = new ModelAndView();
 		modelAndView.addObject("openedStatusBeanList", openedStatusBeanList);
@@ -68,7 +73,7 @@ public class StatusReportController {
 	}
 
     public List<StatusBeanCustom> mainFormAndReleaseNote(StatusBeanVo statusBeanVo) throws Exception {
-    	List<StatusBeanCustom> statusBeanCustomList = statusService.getStatusByMultiParam(statusBeanVo);
+    	List<StatusBeanCustom> statusBeanCustomList = statusService.fetchStatusByMultiParam(statusBeanVo);
 		for(int i = 0; i < statusBeanCustomList.size(); i++){
 			StatusBeanCustom statusBeanCustom = statusBeanCustomList.get(i);
 			if(statusBeanCustom.getItemDesc() != null){

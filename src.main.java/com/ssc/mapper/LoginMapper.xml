@@ -5,7 +5,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.ssc.mapper.LoginMapper">
 
-<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+<!-- <cache type="org.mybatis.caches.ehcache.EhcacheCache"/> -->
 
 <!--   ResultMap     -->
 <resultMap type="UserQueryVo" id="UserMap">

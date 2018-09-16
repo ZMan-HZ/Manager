@@ -7,7 +7,6 @@ public class StatusBasicBean implements Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
 	private String projectStatus; 
 	private int	id ;
 	private int	parent_id ;

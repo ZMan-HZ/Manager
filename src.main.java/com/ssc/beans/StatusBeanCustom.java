@@ -20,8 +20,9 @@ public class StatusBeanCustom  extends StatusBean implements Serializable{
 	private String fileName;
 	private String description;
 	private String startDate;
-	private String prodDateCustom;
+//	private String prodDateCustom;
     private String changeType;
+    
 //    private String itemDescwithoutChangeType;
 //    
 //	
@@ -37,12 +38,12 @@ public class StatusBeanCustom  extends StatusBean implements Serializable{
 	public void setChangeType(String changeType) {
 		this.changeType = changeType;
 	}
-	public String getProdDateCustom() {
-		return prodDateCustom;
-	}
-	public void setProdDateCustom(String prodDateCustom) {
-		this.prodDateCustom = prodDateCustom;
-	}
+//	public String getProdDateCustom() {
+//		return prodDateCustom;
+//	}
+//	public void setProdDateCustom(String prodDateCustom) {
+//		this.prodDateCustom = prodDateCustom;
+//	}
 
 	public String getStartDate() {
 		return startDate;

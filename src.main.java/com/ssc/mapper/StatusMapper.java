@@ -23,7 +23,7 @@ public interface StatusMapper {
 	public List<StatusBeanCustom> getStatusByMultiParam(StatusBeanVo statusBeanVo) throws Exception;
 	
 	public List<StatusBeanCustom> getProjectNames() throws Exception;
-	public List<StatusBasicBeanCustom> getProjectStausByGroupID(Integer groupID) throws Exception;
+	public List<StatusBasicBeanCustom> getProjectStatusByGroupID(Integer groupID) throws Exception;
 	
 	public void updateUserByName(UserCustom userCustom) throws Exception;
 	

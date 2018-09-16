@@ -37,13 +37,39 @@ table {
 .pageTitle {
 	font-size: 15px;
 }
+
+input[type="file"]{
+border:1px soild red;
+width:480px;
+opacity:0;
+display:none;
+}
+.upload-choose{
+width:80px;
+height:30px;
+background:#eee;
+float:left;
+text-align:center;
+line-height:30px;
+font-size:14px;
+font-weight:bold;
+}
+.upload-info{
+width:400px;
+border:1px soild #eee;
+height:28px;
+float:left;
+
+}
+
 </style>
 <script type="text/javascript">
 function submitData() {
-	if(document.getElementById("namefile").value != "") {
+	if(document.getElementById("filename").value != "") {
    		document.getElementById("FileUploadForm").submit();
 	}
 }
+
 </script>
 <script type="text/javascript">
 function updateDescription(attachmentId,projectID) {
@@ -52,6 +78,7 @@ function updateDescription(attachmentId,projectID) {
 	window.location.href="${pageContext.request.contextPath}/updateFileDescription.action?id="+attachmentId+"&fileDesc="+fileDesc+"&projectID="+projectID;
 }
 </script>
+
 </head>
 <body>
 <a href="${pageContext.request.contextPath}/updateStatus.action?id=${statusBeanCustom.id} ">Status Update Page</a> &nbsp;&nbsp;&nbsp;&nbsp;
@@ -75,7 +102,11 @@ function updateDescription(attachmentId,projectID) {
 </tr>
 <tr>
 <th>File</th>
-<td><input type="file" name="file" id="namefile" size=90></td>
+<td>
+<input type="text" calss="upload-info" name="filePath" id="filePath" size=80  placeholder="choose file(s) to upload"/>
+<input type="button" onClick="$('input[id=filename]').click();" value="Browse">
+<input type="file" name="file" id="filename" size=80 multiple="multiple"  onchange="document.getElementById('filePath').value=this.value;"/> 
+</td>
 </tr>
 <tr>
 <th>Description</th>

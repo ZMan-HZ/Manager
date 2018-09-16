@@ -16,8 +16,7 @@ public class ProjectCommentVo implements Serializable{
 	public ProjectCommentBeanCustom getProjectCommentBeanCustom() {
 		return projectCommentBeanCustom;
 	}
-	public void setProjectCommentBeanCustom(
-			ProjectCommentBeanCustom projectCommentBeanCustom) {
+	public void setProjectCommentBeanCustom(ProjectCommentBeanCustom projectCommentBeanCustom) {
 		this.projectCommentBeanCustom = projectCommentBeanCustom;
 	}
 	public String getProjectName() {

@@ -20,7 +20,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 
 <!-- <select id="getAllProdDateByGroupID" parameterType="UserQueryVo" resultType="NaviBeanCustom"> -->
-<select id="getAllProdDateByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+<select id="fetchAllProdDateByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
 SELECT DISTINCT PROD_DATE prodDate, PROJECT_NM  projectName FROM PROJECT_STATUS 
 <where>
 IS_DELETE='N' 
@@ -31,7 +31,7 @@ AND  GROUP_ID= #{groupId}
  ORDER BY PROD_DATE DESC, PROJECT_NM
 </select>
 
-<select id="getAllProjectByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+<select id="fetchAllProjectByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
 SELECT PROJECT_NM projectName, COUNT(PROJECT_NM) AS count  FROM PROJECT_STATUS 
 where
 IS_DELETE='N' 
@@ -40,8 +40,8 @@ GROUP BY PROJECT_NM
 ORDER BY PROJECT_NM
 </select>
 
-<select id="getAllProjectCountByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
-SELECT A.JOB_STATUS, B.RESULTNUM, A.NEWORDER FROM ( 
+<select id="fetchAllProjectCountByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+SELECT A.JOB_STATUS job_status, B.RESULTNUM resultNum, A.NEWORDER newOrder FROM ( 
 SELECT PROJECT_ST AS JOB_STATUS, ID AS NEWORDER FROM STATUS_BASIC 
 <where>GROUP_ID= #{groupId}  </where>) A 
 LEFT JOIN ( 
@@ -55,8 +55,8 @@ GROUP BY JOB_STATUS
  ) B ON A.JOB_STATUS=B.JOB_STATUS ORDER BY A.NEWORDER                  
 </select>
 
-<select id="getAllOwnerGroupID" parameterType="Integer" resultType="String">
-SELECT DISTINCT OWNER FROM PROJECT_STATUS 
+<select id="fetchAllOwnerByGroupID" parameterType="Integer" resultType="NaviBeanCustom">
+SELECT DISTINCT OWNER owner FROM PROJECT_STATUS 
 <where>
 IS_DELETE='N' 
 AND  GROUP_ID= #{groupId} 

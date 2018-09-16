@@ -8,14 +8,21 @@ public class NaviBean implements Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
 	private String projectName;
 	private Date prodDate;
 	private int count;
 	private String job_status;
 	private int resultNum;
 	private int newOrder;
+	private String owner;
 	
+	
+	public String getOwner() {
+		return owner;
+	}
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
 	public String getJob_status() {
 		return job_status;
 	}
