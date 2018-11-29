@@ -26,7 +26,7 @@
 		<property name="maxIdle" value="5" />
 	</bean>
 
-   <!-- replace DBCP , By E633229 -->
+
 <!-- 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"> -->
 		<!-- 基础配置 -->
 <!-- 		<property name="jdbcUrl" value="${jdbc.url}"></property> -->
