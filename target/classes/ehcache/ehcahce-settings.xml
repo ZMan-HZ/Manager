@@ -1,0 +1,76 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="false" monitoring="autodetect" dynamicConfig="true">
+
+	<diskStore path="C:/temp/ehcache" />
+	<defaultCache maxElementsOnDisk="10000000" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" memoryStoreEvictionPolicy="LRU" />
+
+	<!-- 2nd Way to Set Cache For Class -->
+	<!-- ============================================ -->
+	<!-- <cache -->
+	<!-- name="fileTransferServiceImpl" -->
+	<!-- maxElementsInMemory="1000" -->
+	<!-- eternal="true" -->
+	<!-- overflowToDisk="true" -->
+	<!-- timeToIdleSeconds="3000" -->
+	<!-- timeToLiveSeconds="3000" -->
+	<!-- diskExpiryThreadIntervalSeconds="1200" /> -->
+
+	<!-- <cache -->
+	<!-- name="statusUpdateServiceImpl" -->
+	<!-- maxElementsInMemory="1000" -->
+	<!-- eternal="true" -->
+	<!-- overflowToDisk="true" -->
+	<!-- timeToIdleSeconds="3000" -->
+	<!-- timeToLiveSeconds="3000" -->
+	<!-- diskExpiryThreadIntervalSeconds="1200" /> -->
+
+	<cache name="statusServiceImpl" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" />
+
+	<cache name="naviServiceImpl" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" />
+
+	<!-- <cache -->
+	<!-- name="projectCommentServiceImpl" -->
+	<!-- maxElementsInMemory="1000" -->
+	<!-- eternal="true" -->
+	<!-- overflowToDisk="true" -->
+	<!-- timeToIdleSeconds="3000" -->
+	<!-- timeToLiveSeconds="3000" -->
+	<!-- diskExpiryThreadIntervalSeconds="1200" /> -->
+
+	<cache name="fileBrowserServiceImpl" maxElementsInMemory="1000" eternal="true" overflowToDisk="false" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" />
+
+	<!-- First Way to Set Cache For Each Function -->
+	<!-- ============================================ -->
+	<!-- 1. -->
+	<!-- <cache name="getAllFilesByMultiParam" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200"/> -->
+	<!-- 2. -->
+	<!-- <cache name="getFilesByProjectID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200"/> -->
+	<!-- 3. -->
+	<!-- <cache name="getFileByID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200"/> -->
+	<!-- 4. -->
+	<!-- <cache name="getAllFilesForSpecifiedProject" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200"/> -->
+	<!-- 5. -->
+	<!-- <cache name="getFileListByIDList" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 6. -->
+	<!-- <cache name="getAllProdDateByGroupID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 7. -->
+	<!-- <cache name="getAllProjectByGroupID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 8. -->
+	<!-- <cache name="getAllProjectCountByGroupID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 9 -->
+	<!-- <cache name="getAllOwnerGroupID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 10. -->
+	<!-- <cache name="getCommentByProjectNameAndDate" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 11. -->
+	<!-- <cache name="getProjectNames" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 12. -->
+	<!-- <cache name="getProjectStausByGroupID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 13. -->
+	<!-- <cache name="getStatusByMultiParam" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 14. -->
+	<!-- <cache name="getStatusByID" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+	<!-- 15. -->
+	<!-- <cache name="getStatusByIDList" maxElementsInMemory="1000" eternal="true" overflowToDisk="true" timeToIdleSeconds="3000" timeToLiveSeconds="3000" diskExpiryThreadIntervalSeconds="1200" /> -->
+
+
+
+</ehcache>

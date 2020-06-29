@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，作用就是对sql进行分类化管理，理解sql隔离 
+注意：使用mapper代理方法开发，namespace有特殊重要的作用，namespace等于mapper接口地址
+-->
+<mapper namespace="com.ssc.mapper.ProjectCommentMapper">
+
+<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+
+<sql id="projectName"><if test="projectName !=null and projectName !=''">
+    and project_nm LIKE '%${projectName}%'
+</if></sql>
+
+<sql id="prodDate"><if test="prodDate !=null and prodDate !=''">
+    and PROD_DATE = #{prodDate,jdbcType=DATE}
+</if></sql>
+<sql id="prodDateOrigin"><if test="prodDateOrigin !=null and prodDateOrigin !=''">
+    and PROD_DATE = #{prodDateOrigin,jdbcType=DATE}
+</if></sql>
+
+<!-- <select id="getCommentsListByProjectNameAndDate" parameterType="ProjectCommentVo" resultType="ProjectCommentBeanCustom"> -->
+<!-- select prod_date prodDate,project_comment projectComments from PROJECT_COMMENTS  -->
+<!-- <where> -->
+<!-- 	<include refid="projectName"></include> -->
+<!-- 	<include refid="prodDate"></include> -->
+<!-- 	</where> -->
+<!-- </select> -->
+
+<select id="getCommentByProjectNameAndDate" parameterType="ProjectCommentVo" resultType="ProjectCommentBeanCustom">
+select prod_date prodDate,project_comment projectComments from PROJECT_COMMENTS 
+<where>
+	<include refid="projectName"></include>
+	<include refid="prodDate"></include>
+	</where>
+</select>
+
+
+<update id="updateMergeProjectComments" parameterType="ProjectCommentBeanCustom">
+update PROJECT_COMMENTS 
+<set>
+<!-- PROD_DATE = #{prodDate,jdbcType=DATE}, -->
+<!-- CHR(10) == \r\n  -->
+project_comment = CONCAT(CONCAT(project_comment,CHR(10)), #{projectComments}) 
+</set>
+<where>
+	<include refid="projectName"></include>
+	<include refid="prodDate"></include>
+</where>
+</update>
+
+
+<update id="updateProjectComments" parameterType="ProjectCommentBeanCustom">
+update PROJECT_COMMENTS 
+<set>
+project_comment = #{projectComments} 
+</set>
+<where>
+	<include refid="projectName"></include>
+	<include refid="prodDate"></include>
+</where>
+</update>
+
+
+<insert id="insertProjectComments"  parameterType="ProjectCommentBeanCustom">
+insert into PROJECT_COMMENTS 
+(project_nm, prod_date, project_comment)
+values
+(#{projectName},#{prodDate},#{projectComments})
+</insert>
+
+
+<delete id="deleteProjectComments" parameterType="ProjectCommentBeanCustom">
+delete from PROJECT_COMMENTS 
+<where>
+	<include refid="projectName"></include>
+	<include refid="prodDateOrigin"></include>
+</where>
+</delete>
+
+
+
+	
+</mapper>
+
+

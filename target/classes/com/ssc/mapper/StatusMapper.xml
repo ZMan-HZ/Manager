@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，作用就是对sql进行分类化管理，理解sql隔离 
+注意：使用mapper代理方法开发，namespace有特殊重要的作用，namespace等于mapper接口地址
+-->
+<mapper namespace="com.ssc.mapper.StatusMapper">
+
+<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+
+<sql id="UserName"><if test="userName!=null">
+and user_nm= #{userName}
+</if>
+</sql>
+
+<sql id="IDList"><if test="idList != null"><foreach collection="idList" item="id" open="and id IN(" close=")" separator=",">
+          #{id}     <!-- 				每个遍历需要拼接的串 --> 
+</foreach></if></sql>
+
+<sql id="Owner"><if test="user!=null and user!=''">
+    and owner LIKE '%${user}%'
+</if></sql>
+
+<sql id="projectName"><if test="projectName!=null and projectName!=''">
+    and project_nm LIKE '%${projectName}%'
+</if></sql>
+
+<sql id="is_delete"><if test="isDelete!=null and isDelete!=''">
+    and is_delete = #{isDelete}
+</if></sql>
+
+<sql id="is_closed"><if test="isClose!=null and isClose!=''">
+    and is_closed = #{isClose}
+</if></sql>
+
+<sql id="group_id"><if test="groupId!=null and groupId!=''">
+    and group_id = #{groupId}
+</if></sql>
+
+<sql id="prodDate"><if test="prodDate!=null and prodDate !=''">
+    and PROD_DATE = #{prodDate,jdbcType=DATE}
+</if></sql>
+
+<sql id="prodDateOrigin"><if test="prodDateOrigin!=null and prodDateOrigin !=''">
+   and PROD_DATE = #{prodDateOrigin,jdbcType=DATE}
+<!--      prod_date = to_date('${prodDateOrigin}','yyyy-MM-dd') -->
+</if></sql>
+
+<sql id="jobStatusList"><choose>
+<when test="jobStatusList != null and isReverse !=null ">
+<choose><when test="isReverse == 'YES' ">
+<foreach collection="jobStatusList" item="status" open="and job_status not IN(" close=")" separator=",">
+          #{status} 
+</foreach></when>
+<otherwise>
+<foreach collection="jobStatusList" item="status" open="and job_status IN(" close=")" separator=",">
+          #{status} 
+</foreach>
+</otherwise>
+</choose></when></choose>
+</sql>
+
+<sql id="jobStatus"><if test="jobStatus!=null and jobStatus!=''">
+    and job_status = #{jobStatus}
+</if>
+</sql>
+
+<sql id="ID"><if test="id!=null">
+and id= #{id}
+</if>
+</sql>
+
+<sql id="orderBy">
+<choose><when test="orderBy == null">a.FILE_NAME</when>
+<otherwise>#{orderBy}</otherwise></choose>
+</sql>
+
+
+<select id="getStatusByID" parameterType="Integer" resultType="StatusBeanCustom">
+	select id,Item_Desc itemDesc,Leader leader,Owner owner,status, prod_date prodDate,create_time createTime,close_time closeTime,is_closed isClosed, 
+	is_delete isDelete, create_by createBy, update_time updateTime, update_by updateBy, project_nm projectName, job_status jobStatus,
+	status_percent statusPercent, has_attachment hasAttachment, other_comment comments, attachments_url, item_category itemCategory, 
+	extra_comment extraComment,	db_scripts dbScripts, remained_questions remainedQuestions from	PROJECT_STATUS
+    where id = #{id}
+</select>
+
+<select id="getStatusByIDList" parameterType="StatusBeanVo" resultType="StatusBeanCustom">
+	select id,Item_Desc itemDesc,Leader leader,Owner owner,status, prod_date prodDate,create_time createTime,close_time closeTime,is_closed isClosed, 
+	is_delete isDelete, create_by createBy, update_time updateTime, update_by updateBy, project_nm projectName, job_status jobStatus,
+	status_percent statusPercent, has_attachment hasAttachment, other_comment comments, attachments_url, item_category itemCategory, 
+	extra_comment extraComment,	db_scripts dbScripts, remained_questions remainedQuestions from	PROJECT_STATUS 
+	<where>
+	<include refid="IDList"></include>
+	</where>
+</select>
+
+<select id="getStatusByMultiParam" parameterType="StatusBeanVo" resultType="StatusBeanCustom">
+	select id,Item_Desc itemDesc,Leader leader,Owner owner,status, prod_date prodDate,create_time createTime,close_time closeTime,is_closed isClosed, 
+	is_delete isDelete, create_by createBy, update_time updateTime, update_by updateBy, project_nm projectName, job_status jobStatus,
+	status_percent statusPercent, has_attachment hasAttachment, other_comment comments, attachments_url, item_category itemCategory, 
+	extra_comment extraComment,	db_scripts dbScripts, remained_questions remainedQuestions from	PROJECT_STATUS 
+	<where>
+	<include refid="Owner"></include>
+	<include refid="projectName"></include>
+	<include refid="is_delete"></include>
+	<include refid="is_closed"></include>
+	<include refid="group_id"></include>
+	<include refid="prodDate"></include>
+	<include refid="jobStatusList"></include>
+	</where>
+	ORDER BY update_time DESC,prod_date DESC,id
+</select>
+
+<select id="getStatusByJobStatus" parameterType="StatusBeanVo" resultType="StatusBeanCustom">
+	select id,Item_Desc itemDesc,Leader leader,Owner owner,status, prod_date prodDate,create_time createTime,close_time closeTime,is_closed isClosed, 
+	is_delete isDelete, create_by createBy, update_time updateTime, update_by updateBy, project_nm projectName, job_status jobStatus,
+	status_percent statusPercent, has_attachment hasAttachment, other_comment comments, attachments_url, item_category itemCategory, 
+	extra_comment extraComment,	db_scripts dbScripts, remained_questions remainedQuestions from PROJECT_STATUS 
+	<where>
+	is_delete='N' 
+	<include refid="jobStatus"></include>
+	<include refid="group_id"></include>
+	<include refid="projectName"></include>
+	</where>
+	order by project_nm, create_time DESC
+</select>
+
+<select id="getAllUsers" resultType="User">
+select user_nm userName, role, group_id groupId, OTHER_CONFIG otherConfig, long_name longName, short_name shortName  from PROJECT_USER
+</select>
+
+
+<select id="getProjectNames"  resultType="StatusBeanCustom">
+select PROJECT_NM projectName, group_id groupId from PROJECT_NAME order by PROJECT_NM
+</select>
+
+<select id="getProjectStatusByGroupID"  parameterType="Integer" resultType="StatusBasicBeanCustom">
+SELECT project_st projectStatus, id, parent_id, next_id, group_id  FROM STATUS_BASIC 
+WHERE group_id=#{group_id} 
+ORDER BY ID
+</select>
+
+
+
+<update id="updateUserByName" parameterType="UserCustom">
+update PROJECT_USER 
+<set >
+<if test="otherConfig != null">OTHER_CONFIG=#{otherConfig},</if>
+</set>
+<where>
+<include refid="UserName"></include>
+</where>
+</update>
+
+
+<update id="updateStatusRecordByID" parameterType="StatusBeanCustom">
+update PROJECT_STATUS
+<set >
+<if test="itemDesc != null and itemDesc !=''">Item_Desc=#{itemDesc},</if>
+<if test="leader != null" >Leader=#{leader},</if>
+<if test="owner != null and owner !=''">Owner=#{owner},</if>
+<choose><when test="status == null or status ==''">Status= NULL,</when>
+<otherwise>Status=#{status},</otherwise>
+</choose>
+<!-- <if test="status != null and status !=''">Status=#{status},</if> -->
+<!-- <if test="prodDate != null">prod_date=#{prodDate},</if> -->
+<choose><when test="prodDate != null">PROD_DATE = #{prodDate,jdbcType=DATE},</when>
+<otherwise>PROD_DATE = NULL,</otherwise>
+</choose>
+<!-- <if test="prodDate != null">PROD_DATE = #{prodDate,jdbcType=DATE},</if> -->
+<choose><when test="closeTime != null">close_time = #{closeTime,jdbcType=DATE},</when>
+<otherwise>close_time = NULL,</otherwise>
+</choose>
+<!-- <if test="closeTime != null and closeTime !=''">close_time=#{closeTime,jdbcType=DATE},</if> -->
+<if test="isClosed != null">is_closed=#{isClosed},</if>
+<if test="isDelete != null and isDelete !=''">is_delete=#{isDelete},</if>
+<if test="updateTime != null">update_time=#{updateTime},</if>
+<if test="updateBy != null and updateBy !=''">update_by=#{updateBy},</if>
+<if test="projectName != null and projectName !=''" >project_nm=#{projectName},</if>
+<if test="jobStatus != null and jobStatus !=''">job_status=#{jobStatus},</if>
+<if test="statusPercent != null">status_percent=#{statusPercent},</if>
+<if test="createTime != null">create_time=#{createTime,jdbcType=DATE},</if>
+<if test="hasAttachment != null">has_attachment=#{hasAttachment},</if>
+<choose><when test="extraComment == null or extraComment ==''">extra_comment = NULL,</when>
+<otherwise>extra_comment=#{extraComment},</otherwise>
+</choose>
+<!-- <if test="extraComment != null and extraComment !=''">extra_comment=#{extraComment},</if> -->
+<!-- <if test="comments != null and comments !=''">other_comment=#{comments},</if> -->
+<!-- <if test="attachments_url != null">attachments_url=#{attachments_url},</if> -->
+<!-- <if test="dbScripts != null and">db_scripts=#{dbScripts},</if> -->
+<!-- <if test="remainedQuestions != null">remained_questions=#{remainedQuestions},</if> -->
+<choose><when test="comments == null or comments ==''">other_comment=null,</when>
+<otherwise>other_comment=#{comments},</otherwise></choose>
+<choose><when test="attachments_url == null or attachments_url == ''">attachments_url=null,</when>
+<otherwise>attachments_url=#{attachments_url},</otherwise></choose>
+<choose><when test="dbScripts == null or dbScripts == ''">db_scripts=null,</when>
+<otherwise>db_scripts=#{dbScripts},</otherwise></choose>
+<choose><when test="remainedQuestions == null or remainedQuestions == ''">remained_questions=null,</when>
+<otherwise>remained_questions=#{remainedQuestions},</otherwise></choose>
+</set>
+	<where>
+	<include refid="ID"></include>
+	</where>
+</update>
+
+<!-- <update id="updateStatusByID" parameterType="StatusBeanCustom"> -->
+<!-- update PROJECT_STATUS -->
+<!-- <set > -->
+<!-- Item_Desc=#{itemDesc}, -->
+<!-- Leader=#{leader}, -->
+<!-- <if test="owner != null and owner !=''">Owner=#{owner},</if> -->
+<!-- Status=#{status}, -->
+<!-- prod_date=#{prodDate}, -->
+<!-- close_time=#{closeTime}, -->
+<!-- is_closed=#{isClosed}, -->
+<!-- <if test="isDelete != null and isDelete !=''">is_delete=#{isDelete},</if> -->
+<!-- update_time=#{updateTime}, -->
+<!-- update_by=#{updateBy},  -->
+<!-- project_nm=#{projectName}, -->
+<!-- job_status=#{jobStatus}, -->
+<!-- status_percent=#{statusPercent}, -->
+<!-- create_time=#{createTime}, -->
+<!-- has_attachment=#{hasAttachment}, -->
+<!-- other_comment=#{comments}, -->
+<!-- attachments_url=#{attachments_url}, -->
+<!-- extra_comment=#{extraComment}, -->
+<!-- db_scripts=#{dbScripts}, -->
+<!-- remained_questions=#{remainedQuestions} -->
+<!-- </set> -->
+<!-- 	<where> -->
+<!-- 	<include refid="ID"></include> -->
+<!-- 	</where> -->
+<!-- </update> -->
+
+
+
+<update id="updateStatusProdDate" parameterType="ProjectCommentBeanCustom">
+update PROJECT_STATUS 
+<set>
+prod_date = #{prodDate} ,
+update_time=#{updateTime}
+</set>
+<where>
+<include refid="projectName"></include>
+<include refid="prodDateOrigin"></include>
+</where>
+</update>
+
+
+
+<insert id="insertStatusRecord" parameterType="StatusBeanCustom">
+<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+SELECT PROJECT_STATUS_ID.nextval as id from dual
+</selectKey>
+insert into PROJECT_STATUS(
+id, Item_Desc,Leader,Owner,Status,prod_date,create_time,close_time,is_closed, is_delete, create_by, update_time, update_by, 
+project_nm, job_status, status_percent, has_attachment, group_id, item_category, extra_comment,remained_questions)values 
+(
+#{id}, #{itemDesc},#{leader},#{owner},#{status},#{prodDate},#{createTime},#{closeTime},#{isClosed},'N',#{createBy},#{createTime},#{updateBy}, 
+#{projectName},#{jobStatus},#{statusPercent},'N',#{groupId},#{itemCategory},#{extraComment},#{remainedQuestions})
+</insert>
+
+
+
+
+
+
+	
+</mapper>
+
+
